@@ -20,16 +20,27 @@ void _schWebSocketOnSend(JsonObject &root){
     root["schVisible"] = 1;
     root["maxSchedules"] = SCHEDULER_MAX_SCHEDULES;
     JsonArray &sch = root.createNestedArray("schedule");
-    for (byte i = 0; i < SCHEDULER_MAX_SCHEDULES; i++) {
+    for (byte i = SCHEDULER_MAX_SCHEDULES - 1; i >= 0; i--) {
         if (!hasSetting("schSwitch", i)) break;
         JsonObject &scheduler = sch.createNestedObject();
         scheduler["schEnabled"] = getSetting("schEnabled", i, 1).toInt() == 1;
         scheduler["schSwitch"] = getSetting("schSwitch", i, 0).toInt();
         scheduler["schAction"] = getSetting("schAction", i, 0).toInt();
-        scheduler["schType"] = getSetting("schType", i, 0);
+        scheduler["schType"] = getSetting("schType", i, 0).toInt();
         scheduler["schHour"] = getSetting("schHour", i, 0).toInt();
         scheduler["schMinute"] = getSetting("schMinute", i, 0).toInt();
-        scheduler["schWDs"] = getSetting("schWDs", i, "");
+        //scheduler["schWDs"] = getSetting("schWDs", i, "");
+
+        String wds = "";
+        int wdint = getSetting("schWDs", i, "").toInt();
+        for (int wd = 0; wd < 7; ++wd) {
+            if ((wdint >> wd) & 1) {
+                wds += String(wd + 1);
+                wds += ',';
+            }
+        }
+        wds.remove(wds.lastIndexOf(','));
+        scheduler["schWDs"] = wds;
     }
 }
 
@@ -73,27 +84,17 @@ void _schConfigure() {
                 );
 
             #endif // DEBUG_SUPPORT
-
         }
-
     }
-
 }
 
-bool _schIsThisWeekday(String weekdays){
+bool _schIsThisWeekday(int weekdays){
 
     // Convert from Sunday to Monday as day 1
     int w = weekday(now()) - 1;
     if (w == 0) w = 7;
 
-    char pch;
-    char * p = (char *) weekdays.c_str();
-    unsigned char position = 0;
-    while (pch = p[position++]) {
-        if ((pch - '0') == w) return true;
-    }
-    return false;
-
+    return (weekdays >> w) & 1;
 }
 
 int _schMinutesLeft(unsigned char schedule_hour, unsigned char schedule_minute){
@@ -114,7 +115,7 @@ void _schCheck() {
         // Skip disabled schedules
         if (getSetting("schEnabled", i, 1).toInt() == 0) continue;
 
-        String sch_weekdays = getSetting("schWDs", i, "");
+        int sch_weekdays = getSetting("schWDs", i, 0).toInt();
         if (_schIsThisWeekday(sch_weekdays)) {
 
             int sch_hour = getSetting("schHour", i, 0).toInt();
@@ -122,13 +123,13 @@ void _schCheck() {
             int minutes_to_trigger = _schMinutesLeft(sch_hour, sch_minute);
 
             if (minutes_to_trigger == 0) {
-                if (getSetting("schType", i, "") == "light") {
+                if (getSetting("schType", i, 0).toInt() == 1) {
+#if LIGHT_PROVIDER != LIGHT_PROVIDER_NONE
                     int sch_brightness = getSetting("schAction", i, -1).toInt();
                     DEBUG_MSG_P(PSTR("[SCH] Switching light %d to %d\n"), sch_switch, sch_brightness);
-#if LIGHT_PROVIDER != LIGHT_PROVIDER_NONE                    
                     lightChannel(sch_switch, sch_brightness);
                     lightUpdate(true, true);
-#endif                    
+#endif
                 } else {
                     int sch_action = getSetting("schAction", i, 0).toInt();
                     DEBUG_MSG_P(PSTR("[SCH] Switching switch %d to %d\n"), sch_switch, sch_action);

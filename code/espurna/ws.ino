@@ -42,6 +42,19 @@ bool _wsStore(String key, String value) {
         }
     }
 
+    if (key.substring(0,6) == "schWDs") {
+      char pch;
+      char * p = (char *) value.c_str();
+      unsigned char position = 0;
+      int wds = 0;
+      while (pch = p[position++]) {
+          if ((pch - '1') >= 0) {
+              wds |= 1 << (pch - '1');
+          }
+      }
+      return setSetting(key, String(wds));
+    }
+
     if (value != getSetting(key)) {
         return setSetting(key, value);
     }

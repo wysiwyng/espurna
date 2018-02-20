@@ -202,7 +202,7 @@ function getData(form) {
     });
 
     // Post process
-    addValue(data, "schSwitch", 0xFF);
+    //addValue(data, "schSwitch", 0xFF);
     delete data["filename"];
     delete data["rfbcode"];
 
@@ -634,7 +634,7 @@ function addSchedule(event) {
     $(line).find(".button-more-schedule").on("click", moreSchedule);
     var ena = $(line).find(":checkbox");
     ena.prop("checked", false).iphoneStyle("refresh");
-    line.appendTo("#schedules");
+    line.prependTo("#schedules");
     return line;
 }
 
@@ -1021,7 +1021,8 @@ function processData(data) {
         if ("schedule" === key) {
             for (i in value) {
                 var schedule = value[i];
-                var sch_line = addSchedule({ data: {schType: schedule["schType"] }});
+                var sch_type = schedule["schType"] == 0 ? "switch" : "light";
+                var sch_line = addSchedule({ data: {schType: sch_type }});
 
                 Object.keys(schedule).forEach(function(key) {
                     var sch_value = schedule[key];
