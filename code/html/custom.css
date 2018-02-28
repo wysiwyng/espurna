@@ -5,6 +5,7 @@
 #menu .pure-menu-heading {
     font-size: 100%;
     padding: .5em .5em;
+    white-space: normal;
 }
 
 .pure-g {
@@ -147,7 +148,8 @@ div.state {
 .button-rfb-forget,
 .button-del-network,
 .button-del-schedule,
-.button-upgrade {
+.button-upgrade,
+.button-settings-factory {
     background: rgb(192, 0, 0); /* redish */
 }
 

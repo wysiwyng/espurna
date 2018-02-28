@@ -310,13 +310,6 @@ PROGMEM const char* const custom_reset_string[] = {
 #define RELAY_SAVE_DELAY        1000
 
 //------------------------------------------------------------------------------
-// I18N
-//------------------------------------------------------------------------------
-
-#define TMP_CELSIUS             0
-#define TMP_FAHRENHEIT          1
-
-//------------------------------------------------------------------------------
 // LED
 //------------------------------------------------------------------------------
 
@@ -325,10 +318,11 @@ PROGMEM const char* const custom_reset_string[] = {
 #define LED_MODE_FOLLOW         2       // LED will follow state of linked relay (check RELAY#_LED)
 #define LED_MODE_FOLLOW_INVERSE 3       // LED will follow the opposite state of linked relay (check RELAY#_LED)
 #define LED_MODE_FINDME         4       // LED will be ON if all relays are OFF
-#define LED_MODE_MIXED          5       // A mixed between WIFI and FINDME
+#define LED_MODE_FINDME_WIFI    5       // A mixture between WIFI and FINDME
 #define LED_MODE_ON             6       // LED always ON
 #define LED_MODE_OFF            7       // LED always OFF
-#define LED_MODE_STATUS         8       // If any relay is ON, LED will be ON, otherwise OFF
+#define LED_MODE_RELAY          8       // If any relay is ON, LED will be ON, otherwise OFF
+#define LED_MODE_RELAY_WIFI     9       // A mixture between WIFI and RELAY, the reverse of MIXED
 
 // -----------------------------------------------------------------------------
 // WIFI
@@ -496,6 +490,29 @@ PROGMEM const char* const custom_reset_string[] = {
 #define NOFUSS_INTERVAL         3600000     // Check for updates every hour
 
 // -----------------------------------------------------------------------------
+// UART <-> MQTT
+// -----------------------------------------------------------------------------
+
+#ifndef UART_MQTT_SUPPORT
+#define UART_MQTT_SUPPORT       0           // No support by default
+#endif
+
+#define UART_MQTT_USE_SOFT      0           // Use SoftwareSerial
+#define UART_MQTT_HW_PORT       Serial      // Hardware serial port (if UART_MQTT_USE_SOFT == 0)
+#define UART_MQTT_RX_PIN        4           // RX PIN (if UART_MQTT_USE_SOFT == 1)
+#define UART_MQTT_TX_PIN        5           // TX PIN (if UART_MQTT_USE_SOFT == 1)
+#define UART_MQTT_BAUDRATE      115200      // Serial speed
+#define UART_MQTT_BUFFER_SIZE   100         // UART buffer size
+
+#if UART_MQTT_SUPPORT
+#define MQTT_SUPPORT            1
+#undef TERMINAL_SUPPORT
+#define TERMINAL_SUPPORT        0
+#undef DEBUG_SERIAL_SUPPORT
+#define DEBUG_SERIAL_SUPPORT    0
+#endif
+
+// -----------------------------------------------------------------------------
 // MQTT
 // -----------------------------------------------------------------------------
 
@@ -549,7 +566,7 @@ PROGMEM const char* const custom_reset_string[] = {
 
 #define MQTT_USE_JSON               0               // Group messages in a JSON body
 #define MQTT_USE_JSON_DELAY         100             // Wait this many ms before grouping messages
-#define MQTT_QUEUE_MAX_SIZE         10              // Size of the MQTT queue when MQTT_USE_JSON is enabled
+#define MQTT_QUEUE_MAX_SIZE         20              // Size of the MQTT queue when MQTT_USE_JSON is enabled
 
 // These are the properties that will be sent when useJson is true
 #ifndef MQTT_ENQUEUE_IP
@@ -592,6 +609,8 @@ PROGMEM const char* const custom_reset_string[] = {
 #define MQTT_TOPIC_RFIN         "rfin"
 #define MQTT_TOPIC_RFLEARN      "rflearn"
 #define MQTT_TOPIC_RFRAW        "rfraw"
+#define MQTT_TOPIC_UARTIN       "uartin"
+#define MQTT_TOPIC_UARTOUT      "uartout"
 
 // Light module
 #define MQTT_TOPIC_CHANNEL      "channel"
@@ -830,6 +849,7 @@ PROGMEM const char* const custom_reset_string[] = {
 
 // -----------------------------------------------------------------------------
 // RFBRIDGE
+// This module is not compatible with RF_SUPPORT=1
 // -----------------------------------------------------------------------------
 
 #define RF_SEND_TIMES           4               // How many times to send the message
@@ -991,6 +1011,7 @@ PROGMEM const char* const custom_reset_string[] = {
 // Custom RF module
 // Check http://tinkerman.cat/adding-rf-to-a-non-rf-itead-sonoff/
 // Enable support by passing RF_SUPPORT=1 build flag
+// This module is not compatible with RFBRIDGE
 //--------------------------------------------------------------------------------
 
 #ifndef RF_SUPPORT
@@ -1001,5 +1022,5 @@ PROGMEM const char* const custom_reset_string[] = {
 #define RF_PIN                      14
 #endif
 
-#define RF_CHANNEL                  31
-#define RF_DEVICE                   1
+#define RF_DEBOUNCE                 500
+#define RF_LEARN_TIMEOUT            60000

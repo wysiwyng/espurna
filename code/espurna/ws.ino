@@ -106,8 +106,22 @@ void _wsParse(AsyncWebSocketClient *client, uint8_t * payload, size_t length) {
 
         DEBUG_MSG_P(PSTR("[WEBSOCKET] Requested action: %s\n"), action);
 
-        if (strcmp(action, "reboot") == 0) deferredReset(100, CUSTOM_RESET_WEB);
-        if (strcmp(action, "reconnect") == 0) _web_defer.once_ms(100, wifiDisconnect);
+        if (strcmp(action, "reboot") == 0) {
+            deferredReset(100, CUSTOM_RESET_WEB);
+            return;
+        }
+
+        if (strcmp(action, "reconnect") == 0) {
+            _web_defer.once_ms(100, wifiDisconnect);
+            return;
+        }
+
+        if (strcmp(action, "factory_reset") == 0) {
+            DEBUG_MSG_P(PSTR("\n\nFACTORY RESET\n\n"));
+            resetSettings();
+            deferredReset(100, CUSTOM_RESET_FACTORY);
+            return;
+        }
 
         JsonObject& data = root["data"];
         if (data.success()) {
@@ -125,6 +139,8 @@ void _wsParse(AsyncWebSocketClient *client, uint8_t * payload, size_t length) {
                     wsSend_P(client_id, PSTR("{\"message\": 4}"));
                 }
             }
+
+            return;
 
         }
 
@@ -268,8 +284,6 @@ void _wsOnStart(JsonObject& root) {
 
         root["btnDelay"] = getSetting("btnDelay", BUTTON_DBLCLICK_DELAY).toInt();
         root["webPort"] = getSetting("webPort", WEB_PORT).toInt();
-        root["tmpUnits"] = getSetting("tmpUnits", SENSOR_TEMPERATURE_UNITS).toInt();
-        root["tmpCorrection"] = getSetting("tmpCorrection", SENSOR_TEMPERATURE_CORRECTION).toFloat();
 
     }
 

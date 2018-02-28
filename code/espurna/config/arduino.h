@@ -54,6 +54,7 @@
 //#define ARILUX_E27
 //#define XENON_SM_PW702U
 //#define AUTHOMETION_LYT8266
+//#define KMC_70011
 //#define GENERIC_8CH
 //#define ARILUX_AL_LC01
 //#define ARILUX_AL_LC11
@@ -88,6 +89,7 @@
 //#define TELNET_SUPPORT         0
 //#define TERMINAL_SUPPORT       0
 //#define THINGSPEAK_SUPPORT     0
+//#define UART_MQTT_SUPPORT      1
 //#define WEB_SUPPORT            0
 
 //--------------------------------------------------------------------------------
